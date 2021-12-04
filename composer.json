@@ -1,0 +1,44 @@
+{
+    "name": "romanstruk/smsnotify",
+    "description": "Відправка смс",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Roman",
+            "email": "romanuch4@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3|^8.0",
+        "guzzlehttp/guzzle": "7.4.x"
+    },
+    "require-dev": {
+        "orchestra/testbench": "6.x",
+        "phpunit/phpunit": "^9.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "RomanStruk\\SmsNotify\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+          "RomanStruk\\SmsNotify\\Tests\\": "./tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+          "providers": [
+            "RomanStruk\\SmsNotify\\SmsNotifyServiceProvider"
+          ],
+          "aliases": {
+            "SmsNotify": "RomanStruk\\SmsNotify\\SmsNotifyFacade"
+          }
+        }
+    },
+    "minimum-stability": "dev",
+    "scripts": {
+        "test": "phpunit"
+    }
+}
