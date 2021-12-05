@@ -2,6 +2,7 @@
 namespace RomanStruk\SmsNotify\Tests;
 
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use RomanStruk\SmsNotify\SmsNotifyFacade;
 use RomanStruk\SmsNotify\SmsNotifyServiceProvider;
 
 abstract class TestCase extends BaseTestCase
@@ -10,6 +11,13 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             SmsNotifyServiceProvider::class,
+        ];
+    }
+
+    protected function getPackageAliases($app)
+    {
+        return [
+            'SmsNotifyFacade' => SmsNotifyFacade::class
         ];
     }
 }

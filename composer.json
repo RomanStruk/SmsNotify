@@ -11,7 +11,8 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "guzzlehttp/guzzle": "7.4.x"
+        "guzzlehttp/guzzle": "7.4.x",
+      "ext-json": "*"
     },
     "require-dev": {
         "orchestra/testbench": "6.x",
