@@ -45,17 +45,17 @@ class ServiceProviderTest extends TestCase
 
     public function test_viber_request_client()
     {
-        $client = new ViberClient('sdfsdf', 'sdfsdf', 'sdfsdf');
-//        $client = $this->getMockBuilder(ViberClient::class)->disableOriginalConstructor()->getMock();
-        // спробувати розщирити клас і переоприділити guzzle
-        $viberClientMock = Mockery::mock($client, function (MockInterface $mock){
-            $mock->shouldReceive('guzzleClient->post')
+        $viberClientMock = Mockery::mock(ViberClient::class , function (MockInterface $mock){
+            $mock->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('request')
                 ->andReturn(
                     new \GuzzleHttp\Psr7\Response(200, [], json_encode(['status' => 'success', 'id'=>99]))
                 );
-        });
-dd($viberClientMock);
-        $viberClientMock->viberRequest('0998514444', 'Some message');
+        })->makePartial();
+
+        $response = $viberClientMock->viberRequest('0998514444', 'Some message');
+
+        $this->assertEquals(99, $response->messageId);
 
     }
 
@@ -63,23 +63,16 @@ dd($viberClientMock);
     {
         $res = new Response(200, true, 'success');
         $res->setMessageId(99);
-        $viberClientMock = Mockery::mock(ViberClient::class, function (MockInterface $mock) use ($res) {
-            $mock->shouldReceive('viberRequest')
-//                ->andReturn(
-//                    new \GuzzleHttp\Psr7\Response(200, [], json_encode(['status' => 'success', 'id'=>99]))
-//                );
+
+        $viberClient = Mockery::mock(Viber::class, function (MockInterface $mock) use ($res) {
+            $mock
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('request')
                 ->andReturn($res);
-        });
+        })->makePartial();
 
-        $viberClient = new Viber([
-            'token' => 'sdfsadfs345345',
-            'sender_vb' => 'sdfsdf',
-            'sender_sms' => 'sdfsdf',
-            'default_channel' => 'viber',
-        ]);
-        $viberClient->client = $viberClientMock;
 
-        $response = $viberClient->to(new PhoneNumber('s4554sdf'))->send(new SmsMessage('test'));
+        $response = $viberClient->to(new PhoneNumber('0661234567'))->send(new SmsMessage('test message'));
 
         $this->assertEquals(99, $response->getMessageId());
     }

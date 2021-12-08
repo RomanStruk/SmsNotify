@@ -112,11 +112,13 @@ class ViberClient
      */
     public function viberRequest($recipients, $message): ResponseInterface
     {
-        $guzzleResponse = $this->guzzleClient->post($this->api_urls['viber'], [
-            'headers' => $this->headers,
-            'json' => $this->prepareViberRequest($recipients, $message)
-        ]);
+        $guzzleResponse = $this->request($this->api_urls['viber'], $this->headers, $this->prepareViberRequest($recipients, $message));
         return $this->parseResponse($guzzleResponse);
+    }
+
+    protected function request($url, $headers, $json)
+    {
+        return $this->guzzleClient->post($url, ['headers' => $headers, 'json' => $json]);
     }
 
     /**
@@ -150,7 +152,7 @@ class ViberClient
             //відповідь для відправки повідомлень
             if (array_key_exists('status', $content) && $content['status'] === 'success') {
                 $response->setMessage(implode(', ', $content));
-                $response->setMessageId(implode($content['id']));
+                $response->setMessageId($content['id']);
 
                 return $response;
             }

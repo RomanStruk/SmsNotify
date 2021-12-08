@@ -21,7 +21,7 @@ class Viber implements ClientInterface
     /**
      * @var ViberClient
      */
-    public $client;
+    private $client;
 
     /**
      * @var string
