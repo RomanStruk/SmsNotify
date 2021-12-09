@@ -14,11 +14,6 @@ class ViberClient
     /**
      * @var string
      */
-    private $token;
-
-    /**
-     * @var string
-     */
     private $api_urls = [
         'user-info' => 'https://my2.viber.net.ua/api/v2/user/info',
         'sms' => 'https://my2.viber.net.ua/api/v2/sms/dispatch',
@@ -27,9 +22,15 @@ class ViberClient
     ];
 
     /**
+     * @var string
+     */
+    private $token;
+
+    /**
      * @var GuzzleHttpClient
      */
     protected $guzzleClient;
+
     /**
      * @var string[]
      */
@@ -99,10 +100,7 @@ class ViberClient
      */
     public function smsRequest($recipients, $message): ResponseInterface
     {
-        $guzzleResponse =  $this->guzzleClient->post($this->api_urls['sms'], [
-            'headers' => $this->headers,
-            'json' => $this->prepareSmsRequest($recipients, $message)
-        ]);
+        $guzzleResponse =  $this->request($this->api_urls['sms'], $this->headers, $this->prepareSmsRequest($recipients, $message));
         return $this->parseResponse($guzzleResponse);
     }
 
@@ -116,7 +114,14 @@ class ViberClient
         return $this->parseResponse($guzzleResponse);
     }
 
-    protected function request($url, $headers, $json)
+    /**
+     * @param $url
+     * @param $headers
+     * @param $json
+     * @return GuzzleResponseInterface
+     * @throws GuzzleException
+     */
+    protected function request($url, $headers, $json): GuzzleResponseInterface
     {
         return $this->guzzleClient->post($url, ['headers' => $headers, 'json' => $json]);
     }
@@ -128,14 +133,9 @@ class ViberClient
      * @throws GuzzleException
      * @throws JsonException
      */
-    public function requestStatus($id_message): ResponseInterface
+    public function statusRequest($id_message): ResponseInterface
     {
-        return $this->parseResponse($this->guzzleClient->post($this->api_urls['status'], [
-            'headers' => $this->headers,
-            'json' => [
-                'id' => $id_message
-            ]
-        ]));
+        return $this->parseResponse($this->request($this->api_urls['status'], $this->headers,['id' => $id_message]));
     }
 
     /**

@@ -4,7 +4,6 @@ namespace RomanStruk\SmsNotify\Clients\ViberUa;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ServerException;
 use InvalidArgumentException;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
@@ -34,11 +33,20 @@ class Viber implements ClientInterface
      */
     private $channel = 'viber';
 
-    private string $numbers;
+    /**
+     * @var string
+     */
+    private $numbers;
+
     /**
      * @var ResponseInterface|Response
      */
     private $response;
+
+    /**
+     * @var bool
+     */
+    private $debug;
 
     public function __construct($config)
     {
@@ -58,18 +66,34 @@ class Viber implements ClientInterface
         $this->setOption('name', $config['sender_vb']);
     }
 
+    /**
+     * @param MessageInterface $message
+     * @return ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \JsonException
+     */
     public function send(MessageInterface $message): ResponseInterface
     {
         try {
             $this->response = $this->request($this->numbers, $message->getMessage());
             $this->message_id = $this->response->getMessageId();
         }catch (ClientException $e) {
-            $this->response = new Response(500, false);
-            $this->response->setErrors([$e->getMessage()]);
+            $guzzleResponse = $e->getResponse();
+            $this->response = new Response($guzzleResponse->getStatusCode(), false);
+            $this->response->setError($e->getMessage());
+            if ($guzzleResponse->getStatusCode() === 401){
+                $this->response->setMessage('Unauthenticated');
+            }
         }
+        $this->response->setSenderClient($this);
+
         return $this->response;
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \JsonException
+     */
     protected function request(string $phone, string $message)
     {
         $response = new Response();
@@ -98,7 +122,7 @@ class Viber implements ClientInterface
             $message_id = $id;
         }
         try {
-            $this->response = $this->client->requestStatus($message_id);
+            $this->response = $this->client->statusRequest($message_id);
         } catch (RequestException $e) {
             $this->response = new Response(500, false);
             $this->response->setErrors([$e->getMessage()]);
@@ -106,6 +130,7 @@ class Viber implements ClientInterface
             $this->response = new Response(500, false);
             $this->response->setErrors([$exception->getMessage()]);
         }
+        $this->response->setSenderClient($this);
         return $this->response;
     }
 
@@ -127,6 +152,15 @@ class Viber implements ClientInterface
     public function to(PhoneNumberInterface $phoneNumber): ClientInterface
     {
         $this->numbers = $phoneNumber->getNumber();
+        return $this;
+    }
+
+    public function debug(bool $mode): ClientInterface
+    {
+        $this->debug = $mode;
+        if ($mode){
+            $this->client = new FakeViberClient();
+        }
         return $this;
     }
 }

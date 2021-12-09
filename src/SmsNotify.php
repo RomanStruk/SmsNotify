@@ -8,7 +8,6 @@ use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
 use RomanStruk\SmsNotify\Contracts\ResponseInterface;
 use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
-use RomanStruk\SmsNotify\Response\Response;
 
 class SmsNotify implements SmsNotifyInterface
 {
@@ -41,16 +40,17 @@ class SmsNotify implements SmsNotifyInterface
 
     /**
      * @param string $alias
+     * @param array $configuration
      * @return SmsNotifyInterface
      * @throws \Exception
      */
-    public function client(string $alias): SmsNotifyInterface
+    public function client(string $alias, array $configuration = []): SmsNotifyInterface
     {
         if (! array_key_exists($alias, $this->config['drivers']) || !$client = $this->config['drivers'][$alias]['client']){
             throw new \Exception('Invalid client driver');
         }
 
-        $this->client = new $client($this->config['drivers'][$alias]);
+        $this->client = new $client(!empty($configuration) ? $configuration: $this->config['drivers'][$alias]);
 
         return $this;
     }
@@ -73,6 +73,8 @@ class SmsNotify implements SmsNotifyInterface
     public function debug(bool $mode = false): SmsNotifyInterface
     {
         $this->config['debug'] = $mode;
+        $this->client->debug($mode);
+
         return $this;
     }
 
@@ -86,6 +88,15 @@ class SmsNotify implements SmsNotifyInterface
         $key = $closure($this);
 
         $this->client($this->config['map'][$key]);
+        return $this;
+    }
+
+    /**
+     * @return SmsNotifyInterface
+     */
+    public function enableDebug(): SmsNotifyInterface
+    {
+        $this->debug(true);
         return $this;
     }
 }

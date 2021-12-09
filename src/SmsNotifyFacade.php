@@ -12,6 +12,7 @@ use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
  * @method static ResponseInterface send(MessageInterface $message)
  * @method static SmsNotifyInterface to(PhoneNumberInterface $phoneNumber)
  * @method static SmsNotifyInterface clientMap(\Closure $closure)
+ * @method static SmsNotifyInterface client(string $alias, array $configuration = [])
  *
  * @see SmsNotify
 */

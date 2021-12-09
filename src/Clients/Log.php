@@ -33,11 +33,21 @@ class Log implements ClientInterface
 
         LaravelLog::channel('syslog')->info('SmsNotify', [$this->formatMessage()]);
 
-        return new Response();
+        $response = new Response();
+        $response->setSenderClient($this);
+        $response->setDebugInformation('numbers', $this->phoneNumber->getNumber());
+        $response->setDebugInformation('message', $message->getMessage());
+        $response->setDebugInformation('client', self::class);
+        return $response;
     }
 
     protected function formatMessage(): string
     {
         return $this->phoneNumber->getNumber() .' ' . $this->message->getMessage();
+    }
+
+    public function debug(bool $mode): ClientInterface
+    {
+        return $this;
     }
 }

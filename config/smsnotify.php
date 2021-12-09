@@ -15,14 +15,18 @@ return [
             'client' => \RomanStruk\SmsNotify\Clients\Log::class
         ],
         'viber' => [
-            'client' => '',
+            'client' => \RomanStruk\SmsNotify\Clients\ViberUa\Viber::class,
             'token' => '',
             'sender_vb' => '',
             'sender_sms' => '',
             'default_channel' => 'viber',
         ],
         'mts-communicator' => [
-            'client' => ''
+            'client' => \RomanStruk\SmsNotify\Clients\MtsCommunicator\MtsCommunicator::class,
+            'login' => '',
+            'password' => '',
+            'client_id' => '',
+            'alfa_name' => '',
         ]
     ],
     'map' => [
