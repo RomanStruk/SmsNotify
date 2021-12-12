@@ -7,7 +7,7 @@ use InvalidArgumentException;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 
 class MtsCommunicator implements ClientInterface
 {

@@ -2,6 +2,8 @@
 
 namespace RomanStruk\SmsNotify\Contracts;
 
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
+
 interface ClientInterface
 {
     public function to(PhoneNumberInterface $phoneNumber): ClientInterface;

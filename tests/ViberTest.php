@@ -9,14 +9,14 @@ use RomanStruk\SmsNotify\Clients\ViberUa\ViberClient;
 use RomanStruk\SmsNotify\Message\SmsMessage;
 use RomanStruk\SmsNotify\PhoneNumber\PhoneNumber;
 use RomanStruk\SmsNotify\Response\Response;
+use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
 use RomanStruk\SmsNotify\SmsNotifyFacade;
 
 class ViberTest extends TestCase
 {
     public function test_viber_client_is_send_message()
     {
-        $res = new Response(200, true, 'success');
-        $res->setMessageId(99);
+        $res = new Response(new SuccessDeliveryReport('0661234567', 99, 'OK', 200));
 
         $viberClient = Mockery::mock(Viber::class, function (MockInterface $mock) use ($res) {
             $mock
@@ -43,7 +43,7 @@ class ViberTest extends TestCase
 
         $response = $viberClientMock->viberRequest('0666000000', 'Some message');
 
-        $this->assertEquals(99, $response->messageId);
+        $this->assertEquals(99, $response->getMessageId('0666000000'));
 
     }
 
@@ -54,6 +54,6 @@ class ViberTest extends TestCase
             ->to(new PhoneNumber('0666000000'))
             ->send(new SmsMessage('Some text'));
 
-        $this->assertEquals('Unauthenticated', $response->getMessage());
+        $this->assertEquals('Unauthenticated', $response->getStatus('0666000000'));
     }
 }

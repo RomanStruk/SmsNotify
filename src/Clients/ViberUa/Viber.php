@@ -5,13 +5,15 @@ namespace RomanStruk\SmsNotify\Clients\ViberUa;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
+use RomanStruk\SmsNotify\Contracts\ClientChannelInterface;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
+use RomanStruk\SmsNotify\Response\FailDeliveryReport;
 use RomanStruk\SmsNotify\Response\Response;
 
-class Viber implements ClientInterface
+class Viber implements ClientInterface, ClientChannelInterface
 {
     const CHANNEL_VIBER_SMS = 'viber_sms';
     const CHANNEL_VIBER = 'viber';
@@ -75,19 +77,21 @@ class Viber implements ClientInterface
     public function send(MessageInterface $message): ResponseInterface
     {
         try {
-            $this->response = $this->request($this->numbers, $message->getMessage());
-            $this->message_id = $this->response->getMessageId();
+            $response = $this->request($this->numbers, $message->getMessage());
         }catch (ClientException $e) {
             $guzzleResponse = $e->getResponse();
-            $this->response = new Response($guzzleResponse->getStatusCode(), false);
-            $this->response->setError($e->getMessage());
             if ($guzzleResponse->getStatusCode() === 401){
-                $this->response->setMessage('Unauthenticated');
-            }
-        }
-        $this->response->setSenderClient($this);
+                $fail = new FailDeliveryReport($this->numbers, 'Unauthenticated', 401);
 
-        return $this->response;
+            }else{
+                $fail = new FailDeliveryReport($this->numbers, $e->getMessage(), $guzzleResponse->getStatusCode());
+            }
+            $response = new Response($fail);
+        }
+
+        $response->setSenderClient($this);
+
+        return $response;
     }
 
     /**
@@ -96,15 +100,7 @@ class Viber implements ClientInterface
      */
     protected function request(string $phone, string $message)
     {
-        $response = new Response();
-        switch ($this->channel){
-            case self::CHANNEL_VIBER_SMS:
-            case self::CHANNEL_SMS:
-            case self::CHANNEL_VIBER:
-                return $this->client->viberRequest($phone, $message);
-            default:
-        }
-        return $response;
+        return call_user_func([$this->client, "{$this->channel}Request"], $phone, $message);
     }
 
 
@@ -137,7 +133,7 @@ class Viber implements ClientInterface
     /**
      * @param string $channel
      */
-    public function setChannel(string $channel): void
+    public function setChannel(string $channel)
     {
         $this->channel = $channel;
     }

@@ -5,7 +5,7 @@ namespace RomanStruk\SmsNotify;
 use Illuminate\Support\Facades\Facade;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
 
 /**

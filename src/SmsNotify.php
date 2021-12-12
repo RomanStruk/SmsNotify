@@ -6,7 +6,7 @@ use Closure;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
 
 class SmsNotify implements SmsNotifyInterface

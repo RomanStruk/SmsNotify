@@ -6,8 +6,10 @@ use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use Psr\Http\Message\ResponseInterface as GuzzleResponseInterface;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
+use RomanStruk\SmsNotify\Response\FailDeliveryReport;
 use RomanStruk\SmsNotify\Response\Response;
+use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
 
 class ViberClient
 {
@@ -111,7 +113,7 @@ class ViberClient
     public function viberRequest($recipients, $message): ResponseInterface
     {
         $guzzleResponse = $this->request($this->api_urls['viber'], $this->headers, $this->prepareViberRequest($recipients, $message));
-        return $this->parseResponse($guzzleResponse);
+        return $this->parseResponse($guzzleResponse, $recipients);
     }
 
     /**
@@ -141,31 +143,23 @@ class ViberClient
     /**
      * @throws JsonException
      */
-    private function parseResponse(GuzzleResponseInterface $guzzleResponse): ResponseInterface
+    private function parseResponse(GuzzleResponseInterface $guzzleResponse, $recipients = null): ResponseInterface
     {
-        $response = new Response(500, false);
         if ($guzzleResponse->getStatusCode() === 200) {
-            $response->setSuccess(true);
-            $response->setStatusCode($guzzleResponse->getStatusCode());
-
             $content = json_decode($guzzleResponse->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
             //відповідь для відправки повідомлень
             if (array_key_exists('status', $content) && $content['status'] === 'success') {
-                $response->setMessage(implode(', ', $content));
-                $response->setMessageId($content['id']);
-
-                return $response;
+                $success = new SuccessDeliveryReport($recipients, $content['id'], implode(', ', $content), 200);
+                return new Response($success);
             }
             // відповідь для статусу повідомлення
             if (array_key_exists('query_status', $content) && $content['query_status'] === 'success') {
-                $response->setMessage(implode(', ', [$content['query_status'], $content['status_name']]));
-
-                return $response;
+                $success = new SuccessDeliveryReport($content['id'], $content['id'], implode(', ', [$content['query_status'], $content['status_name']]), 200);
+                return new Response($success);
             }
 
-            $response->setErrors($content);
         }
-        return $response;
+        return new Response(new FailDeliveryReport($recipients, 'Something wrong', 500));
     }
 
     /**

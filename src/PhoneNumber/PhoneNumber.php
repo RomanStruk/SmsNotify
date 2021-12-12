@@ -32,4 +32,9 @@ class PhoneNumber implements PhoneNumberInterface
     {
         return implode($implodeSeparator, $this->numbers);
     }
+
+    public function getNumbers()
+    {
+        return $this->numbers;
+    }
 }

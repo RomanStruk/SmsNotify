@@ -3,9 +3,9 @@
 namespace RomanStruk\SmsNotify\Clients\MtsCommunicator;
 
 use GuzzleHttp\Client as GuzzleHttpClient;
-use InvalidArgumentException;
-use Psr\Http\Message\ResponseInterface;
+use RomanStruk\SmsNotify\Response\FailDeliveryReport;
 use RomanStruk\SmsNotify\Response\Response;
+use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
 
 class MtsCommunicatorClient
 {
@@ -44,9 +44,8 @@ class MtsCommunicatorClient
     {
         $this->login = $login;
         $this->password = $password;
-        $this->client_id = $client_id;
         $this->alfa_name = $alfa_name;
-        $this->api_url = str_replace('{client_id}', $this->client_id, $this->api_url);
+        $this->api_url = str_replace('{client_id}', $client_id, $this->api_url);
     }
 
     /**
@@ -79,16 +78,15 @@ class MtsCommunicatorClient
             ]
         ]);
         if ($response->getStatusCode() === 200) {
-
             $content = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
-            $response = new Response();
             if (array_key_exists('message_id', $content)) {
-                $response->setMessageId($content['message_id']);
+                $report = new SuccessDeliveryReport($phone, $content['message_id'], 'OK', 200);
+            }else{
+                $report = new FailDeliveryReport($phone, json_encode($content), 500);
             }
-            $response->setErrors($content);
-            return $response;
+            return new Response($report);
         }
-        return new Response();
+        return new Response(new FailDeliveryReport($phone, 'Something wrong', 500));
     }
 }

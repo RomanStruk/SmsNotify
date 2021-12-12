@@ -27,6 +27,11 @@ return [
             'password' => '',
             'client_id' => '',
             'alfa_name' => '',
+        ],
+        'turbosms' => [
+            'client' => \RomanStruk\SmsNotify\Clients\TurboSms\TurboSms::class,
+            'token' => '',
+            'sender_sms' => 'TurboSMS'
         ]
     ],
     'map' => [

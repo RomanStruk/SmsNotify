@@ -3,7 +3,8 @@
 namespace RomanStruk\SmsNotify\Response;
 
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\DeliveryReportInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 
 class Response implements ResponseInterface
 {
@@ -34,75 +35,15 @@ class Response implements ResponseInterface
     public $message;
 
     /**
-     * @var string
-     */
-    public $messageId;
-
-    /**
      * @var array
      */
     private $debugInformation = [];
 
-    public function __construct(int $code = 200, bool $success = true, string $message = '')
-    {
-        $this->statusCode = $code;
-        $this->success = $success;
-        $this->message = $message;
-    }
+    private $deliveryReport = [];
 
-    /**
-     * @param int $statusCode
-     */
-    public function setStatusCode(int $statusCode): void
+    public function __construct(DeliveryReportInterface $report)
     {
-        $this->statusCode = $statusCode;
-    }
-
-    /**
-     * @param string $message
-     */
-    public function setMessage(string $message): void
-    {
-        $this->message = $message;
-    }
-
-    /**
-     * @param bool $success
-     */
-    public function setSuccess(bool $success): void
-    {
-        $this->success = $success;
-    }
-
-    /**
-     * @param mixed $messageId
-     */
-    public function setMessageId(string $messageId): void
-    {
-        $this->messageId = $messageId;
-    }
-
-    /**
-     * @param string $error
-     */
-    public function setError(string $error): void
-    {
-        $this->errors[] = $error;
-    }
-    /**
-     * @param array $errors
-     */
-    public function setErrors(array $errors): void
-    {
-        $this->errors = $errors;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMessageId(): string
-    {
-        return $this->messageId;
+        $this->setDeliveryReport($report);
     }
 
     /**
@@ -113,21 +54,6 @@ class Response implements ResponseInterface
         return $this->errors;
     }
 
-    /**
-     * @return string
-     */
-    public function getMessage(): string
-    {
-        return $this->message;
-    }
-
-    /**
-     * @return int
-     */
-    public function getStatusCode(): int
-    {
-        return $this->statusCode;
-    }
 
     /**
      * @param ClientInterface $senderClient
@@ -152,10 +78,40 @@ class Response implements ResponseInterface
 
     /**
      * @param string $key
-     * @param string $value
+     * @param mixed $value
      */
-    public function setDebugInformation(string $key, string $value): void
+    public function setDebugInformation(string $key, $value): void
     {
         $this->debugInformation[$key] = $value;
+    }
+
+    /**
+     * @param DeliveryReportInterface $report
+     */
+    public function setDeliveryReport(DeliveryReportInterface $report): void
+    {
+        $this->deliveryReport[$report->getPhoneNumber()] = $report;
+    }
+
+    /**
+     * @param string|null $phoneNumber
+     * @return string
+     */
+    public function getStatus(string $phoneNumber = null): string
+    {
+        if (is_null($phoneNumber)) {
+            $array = array_slice($this->deliveryReport, -1);
+            return (array_pop($array))->getStatus();
+        }
+        return $this->deliveryReport[$phoneNumber]->getStatus();
+    }
+
+    public function getMessageId($phoneNumber = null)
+    {
+        if (is_null($phoneNumber)) {
+            $array = array_slice($this->deliveryReport, -1);
+            return (array_pop($array))->getMessageId();
+        }
+        return $this->deliveryReport[$phoneNumber]->getMessageId();
     }
 }

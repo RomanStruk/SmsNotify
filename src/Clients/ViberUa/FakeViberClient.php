@@ -3,7 +3,7 @@
 namespace RomanStruk\SmsNotify\Clients\ViberUa;
 
 use Illuminate\Support\Str;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Response\Response;
 
 class FakeViberClient

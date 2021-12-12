@@ -7,7 +7,7 @@ use Mockery\MockInterface;
 use RomanStruk\SmsNotify\Clients\Log;
 use RomanStruk\SmsNotify\Clients\ViberUa\Viber;
 use RomanStruk\SmsNotify\Clients\ViberUa\ViberClient;
-use RomanStruk\SmsNotify\Contracts\ResponseInterface;
+use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
 use RomanStruk\SmsNotify\Message\SmsMessage;
 use RomanStruk\SmsNotify\PhoneNumber\PhoneNumber;
@@ -49,7 +49,7 @@ class ServiceProviderTest extends TestCase
         $smsNotify = SmsNotifyFacade::client('log');
         $smsNotify->enableDebug();
         $response = $smsNotify
-            ->to(new PhoneNumber('0668514453'))
+            ->to(new PhoneNumber('0666000000'))
             ->send(new SmsMessage('Some text'));
         $debug = $response->getDebugInformation();
 
