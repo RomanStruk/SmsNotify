@@ -79,7 +79,7 @@ class MtsCommunicator implements ClientInterface
     public function send(MessageInterface $message): ResponseInterface
     {
         $this->message = $message;
-        $this->response = $this->client->request($this->phoneNumber->getNumber(), $this->message->getMessage(), $this->channel);
+        $this->response = $this->client->request($this->phoneNumber->implode(), $this->message->getMessage(), $this->channel);
         $this->response->setSenderClient($this);
         return $this->response;
     }

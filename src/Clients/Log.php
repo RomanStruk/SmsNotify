@@ -34,9 +34,9 @@ class Log implements ClientInterface
 
         LaravelLog::channel('syslog')->info('SmsNotify', [$this->formatMessage()]);
 
-        $response = new Response(new SuccessDeliveryReport($this->phoneNumber->getNumber(), '', $this->formatMessage(), 200));
+        $response = new Response(new SuccessDeliveryReport($this->phoneNumber->first(), '', $this->formatMessage(), 200));
         $response->setSenderClient($this);
-        $response->setDebugInformation('numbers', $this->phoneNumber->getNumber());
+        $response->setDebugInformation('numbers', $this->phoneNumber->toArray());
         $response->setDebugInformation('message', $message->getMessage());
         $response->setDebugInformation('client', self::class);
         return $response;
@@ -44,7 +44,7 @@ class Log implements ClientInterface
 
     protected function formatMessage(): string
     {
-        return $this->phoneNumber->getNumber() .' ' . $this->message->getMessage();
+        return $this->phoneNumber->first() .' ' . $this->message->getMessage();
     }
 
     public function debug(bool $mode): ClientInterface

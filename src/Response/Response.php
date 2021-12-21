@@ -41,9 +41,11 @@ class Response implements ResponseInterface
 
     private $deliveryReport = [];
 
-    public function __construct(DeliveryReportInterface $report)
+    public function __construct(DeliveryReportInterface $report = null)
     {
-        $this->setDeliveryReport($report);
+        if (! is_null($report)){
+            $this->setDeliveryReport($report);
+        }
     }
 
     /**

@@ -4,5 +4,11 @@ namespace RomanStruk\SmsNotify\Contracts;
 
 interface PhoneNumberInterface
 {
-    public function getNumber($implodeSeparator = ', '): string;
+    public function isValidNumbers(): bool;
+
+    public function toArray(): array;
+
+    public function implode(string $separator = ', '): string;
+
+    public function first(): string;
 }

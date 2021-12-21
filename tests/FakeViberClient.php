@@ -1,10 +1,11 @@
 <?php
 
-namespace RomanStruk\SmsNotify\Clients\ViberUa;
+namespace RomanStruk\SmsNotify\Tests;
 
 use Illuminate\Support\Str;
 use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Response\Response;
+use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
 
 class FakeViberClient
 {
@@ -12,9 +13,6 @@ class FakeViberClient
      */
     public function viberRequest($recipients, $message): ResponseInterface
     {
-        $response = new Response(200, true);
-        $response->setMessageId(Str::random());
-        $response->setMessage($message);
-        return $response;
+        return new Response(new SuccessDeliveryReport('0666666666', Str::random(), $message, 20));
     }
 }

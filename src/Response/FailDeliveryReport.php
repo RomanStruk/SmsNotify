@@ -34,4 +34,13 @@ class FailDeliveryReport implements DeliveryReportInterface
     {
         return $this->code;
     }
+
+    public static function unauthenticated($recipients): FailDeliveryReport
+    {
+        return new self(
+            is_array($recipients) ? implode('', $recipients): $recipients,
+            'Unauthenticated',
+            301
+        );
+    }
 }

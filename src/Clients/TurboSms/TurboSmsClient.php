@@ -41,7 +41,13 @@ class TurboSmsClient
         ];
     }
 
-    private function prepareSmsJson(string $sender, array $recipients, string $text)
+    /**
+     * @param string $sender
+     * @param array $recipients
+     * @param string $text
+     * @return array
+     */
+    private function prepareSmsJson(string $sender, array $recipients, string $text): array
     {
         return [
             'recipients' => $recipients,
@@ -52,20 +58,27 @@ class TurboSmsClient
         ];
     }
 
+    /**
+     * @throws JsonException
+     */
+    private function decodeContent(string $content): array
+    {
+        return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+    }
 
     public function sendSms(array $recipients, string $text): Response
     {
-        $response = new Response(200, false);
+        $response = new Response();
         try {
             $guzzleResponse = $this->request($this->urlMessageSend, $this->headers, $this->prepareSmsJson($this->sender, $recipients, $text));
-            $content = json_decode($guzzleResponse->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+            $content = $this->decodeContent($guzzleResponse->getBody()->getContents());
 
 
-            $code = $content['response_code'];
+            $code = $content['response_code'] ?? null;
 
             if ($code === 0 || $code === 800 || $code === 801 || $code === 802 || $code === 803) {
                 foreach ($content['response_result'] as $responseResult) {
-                    $response = new Response(
+                    $response->setDeliveryReport(
                         $responseResult['response_code'] === 0 ?
                             new SuccessDeliveryReport($responseResult['phone'], $responseResult['message_id'], $responseResult['response_code'], $responseResult['response_status']) :
                             new FailDeliveryReport($responseResult['phone'], $responseResult['response_code'], $responseResult['response_status'])
@@ -73,9 +86,7 @@ class TurboSmsClient
                 }
             }
             if ($code === 301) {
-                $response = new Response(
-                    new FailDeliveryReport(implode(',', $recipients), 'Unauthenticated', 301)
-                );
+                $response->setDeliveryReport(FailDeliveryReport::unauthenticated($recipients));
             }
             $response->setDebugInformation('guzzleResponse', $content);
         } catch (\Exception $exception) {
@@ -91,10 +102,10 @@ class TurboSmsClient
     public function sendSmsPing(array $recipients, string $text): Response
     {
         $guzzleResponse = $this->request($this->urlMessageSendPing, $this->headers, $this->prepareSmsJson($this->sender, $recipients, $text));
-        $content = json_decode($guzzleResponse->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $content = $this->decodeContent($guzzleResponse->getBody()->getContents());
 
         if ($content['response_code'] === 301) {
-            $report = new FailDeliveryReport(implode(',', $recipients), 'Unauthenticated', 301);
+            $report = FailDeliveryReport::unauthenticated($recipients);
         }else{
             $report = new SuccessDeliveryReport(implode(',', $recipients), '', $content['response_status'], $content['response_code']);
         }

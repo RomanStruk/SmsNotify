@@ -3,7 +3,6 @@
 namespace RomanStruk\SmsNotify\Clients\TurboSms;
 
 use InvalidArgumentException;
-use RomanStruk\SmsNotify\Contracts\ClientChannelInterface;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
@@ -50,7 +49,8 @@ class TurboSms implements ClientInterface
     public function send(MessageInterface $message): ResponseInterface
     {
         $this->message = $message;
-        $response = $this->client->sendSms($this->phoneNumber->getNumbers(), $message->getMessage());
+        $response = $this->client->sendSms($this->phoneNumber->toArray(), $message->getMessage());
+
         $response->setSenderClient($this);
         return $response;
     }

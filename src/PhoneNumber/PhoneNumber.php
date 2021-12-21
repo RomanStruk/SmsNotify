@@ -2,6 +2,9 @@
 
 namespace RomanStruk\SmsNotify\PhoneNumber;
 
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberFormat;
+use libphonenumber\PhoneNumberUtil;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
 
 class PhoneNumber implements PhoneNumberInterface
@@ -12,29 +15,57 @@ class PhoneNumber implements PhoneNumberInterface
     private $numbers;
 
     /**
-     * @param string|array $numbers
+     * @var PhoneNumberUtil
      */
-    public function __construct($numbers)
+    private $phoneUtil;
+
+    /**
+     * @param string|array $numbers
+     * @param string $numberRegion
+     */
+    public function __construct($numbers, string $numberRegion)
     {
+
+        $this->phoneUtil = PhoneNumberUtil::getInstance();
+
         if (!is_array($numbers)){
             $numbers = [$numbers];
         }
-        $this->validate($numbers);
-        $this->numbers = $numbers;
+        foreach ($numbers as $number) {
+            try {
+                $this->numbers[] = $this->phoneUtil->parse($number, $numberRegion);
+            } catch (NumberParseException $e) {
+                //TODO $e
+            }
+        }
     }
 
-    protected function validate($numbers): void
+    public function isValidNumbers(): bool
     {
-
+        foreach ($this->numbers as $number) {
+            if(! $this->phoneUtil->isValidNumber($number)){
+                return false;
+            }
+        }
+        return true;
     }
 
-    public function getNumber($implodeSeparator = ', '): string
+    public function implode(string $separator = ', '): string
     {
-        return implode($implodeSeparator, $this->numbers);
+        return implode($separator, $this->toArray());
     }
 
-    public function getNumbers()
+    public function toArray(): array
     {
-        return $this->numbers;
+        $formatted = [];
+        foreach ($this->numbers as $number) {
+            $formatted[] = $this->phoneUtil->format($number, PhoneNumberFormat::E164);
+        }
+        return $formatted;
+    }
+
+    public function first(): string
+    {
+        return $this->toArray()[0];
     }
 }
