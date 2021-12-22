@@ -38,4 +38,12 @@ class ResponseTest extends TestCase
         self::assertEquals(0, $response->current()->getStatus());
         self::assertEquals('f83f8868-5e46-c6cf-e4fb-615e5a293754', $response->current()->getId());
     }
+
+    public function test_response_parse_json_fail_request_turbosms()
+    {
+        $content = '{"response_code":103,"response_status":"REQUIRED_TOKEN","response_result":null}';
+        $response = new Response($content, ResponseMessage::class, 'response_result');
+
+        dd($response->current()->getErrorMessage());
+    }
 }
