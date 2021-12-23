@@ -6,6 +6,5 @@ use RomanStruk\SmsNotify\Response\Message;
 
 class ResponseMessage extends Message
 {
-
-protected $messageIdKey = 'id';
+    protected $messageIdKey = 'id';
 }

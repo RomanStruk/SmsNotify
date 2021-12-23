@@ -35,8 +35,13 @@ class Response implements Countable, Iterator
         }
 
         $this->data = json_decode($data, true);
+        if (is_null($messagesKey)) {
+            $this->messagesKey = 'messages';
+            $this->data[$this->messagesKey] = $this->data;
+        }else{
+            $this->messagesKey = $messagesKey;
+        }
         $this->messageClass = $messageClass;
-        $this->messagesKey = $messagesKey;
     }
 
     public function toArray(): array
