@@ -11,4 +11,13 @@ class ResponseMessage extends Message
     protected $statusKey = 'response_code';
 
     protected $errorKey = 'response_status';
+
+    public function getErrorMessage(): string
+    {
+        if ($this->data[$this->errorKey] === 'OK') {
+            return '';
+        }
+
+        return $this->checkData($this->errorKey);
+    }
 }

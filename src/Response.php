@@ -37,7 +37,7 @@ class Response implements Countable, Iterator
         $this->data = json_decode($data, true);
         if (is_null($messagesKey)) {
             $this->messagesKey = 'messages';
-            $this->data[$this->messagesKey] = $this->data;
+            $this->data[$this->messagesKey][] = $this->data;
         }else{
             $this->messagesKey = $messagesKey;
         }
@@ -57,10 +57,10 @@ class Response implements Countable, Iterator
 
     public function current()
     {
+        if (! isset($this->data[$this->messagesKey])){
+            $this->messages[$this->position] = new $this->messageClass($this->data);
+        }
         if (!isset($this->messages[$this->position])) {
-            if (! $this->valid()){
-                return new $this->messageClass($this->data);
-            }
             $this->messages[$this->position] = new $this->messageClass($this->data[$this->messagesKey][$this->position]);
         }
 

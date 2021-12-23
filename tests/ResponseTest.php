@@ -16,11 +16,14 @@ class ResponseTest extends TestCase
 
         self::assertEquals(406, $response->current()->getStatus());
         self::assertEquals(null, $response->current()->getId());
+        self::assertEquals('NOT_ALLOWED_RECIPIENT_COUNTRY', $response->current()->getErrorMessage());
 
         $response->next();
 
         self::assertEquals(0, $response->current()->getStatus());
         self::assertEquals('f83f8868-5e46-c6cf-e4fb-615e5a293754', $response->current()->getId());
+        self::assertEquals('', $response->current()->getErrorMessage());
+
     }
 
     public function test_response_parse_json_fail_request_turbosms()
@@ -37,6 +40,7 @@ class ResponseTest extends TestCase
         $response = new Response($json, \RomanStruk\SmsNotify\Clients\ViberUa\ResponseMessage::class, null);
 
         self::assertEquals('f83f8868-5e46-c6cf-e4fb-615e5a293754', $response->current()->getId());
+        self::assertEquals('', $response->current()->getErrorMessage());
     }
 
     public function test_response_parse_json_for_viber_failed()
@@ -45,7 +49,8 @@ class ResponseTest extends TestCase
 
         $response = new Response($json, \RomanStruk\SmsNotify\Clients\ViberUa\ResponseMessage::class, null);
 
-        self::assertEquals('Error message', $response->current()->getErrorMessage());
         self::assertEquals('error', $response->current()->getStatus());
+        self::assertEquals('Error message', $response->current()->getErrorMessage());
+
     }
 }
