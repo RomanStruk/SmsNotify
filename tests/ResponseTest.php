@@ -38,4 +38,14 @@ class ResponseTest extends TestCase
 
         self::assertEquals('f83f8868-5e46-c6cf-e4fb-615e5a293754', $response->current()->getId());
     }
+
+    public function test_response_parse_json_for_viber_failed()
+    {
+        $json = '{"status": "error","code": "234","message": "Error message"}';
+
+        $response = new Response($json, \RomanStruk\SmsNotify\Clients\ViberUa\ResponseMessage::class, null);
+
+        self::assertEquals('Error message', $response->current()->getErrorMessage());
+        self::assertEquals('error', $response->current()->getStatus());
+    }
 }
