@@ -6,4 +6,4 @@ composer.lock
 .DS_Store
 Thumbs.db
 .phpunit.result.cache
-./tests/ApiClientTest.php
+.phpunit.cache
