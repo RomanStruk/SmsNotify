@@ -12,7 +12,7 @@ return [
 
     'drivers' => [
         'log' => [
-            'client' => \RomanStruk\SmsNotify\Clients\Log::class
+            'client' => \RomanStruk\SmsNotify\Clients\Log\Log::class
         ],
         'viber' => [
             'client' => \RomanStruk\SmsNotify\Clients\ViberUa\Viber::class,

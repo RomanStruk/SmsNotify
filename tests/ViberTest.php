@@ -4,19 +4,21 @@ namespace RomanStruk\SmsNotify\Tests;
 
 use Mockery;
 use Mockery\MockInterface;
+use RomanStruk\SmsNotify\Clients\ViberUa\ResponseMessage;
 use RomanStruk\SmsNotify\Clients\ViberUa\Viber;
 use RomanStruk\SmsNotify\Clients\ViberUa\ViberClient;
 use RomanStruk\SmsNotify\Message\SmsMessage;
 use RomanStruk\SmsNotify\PhoneNumber\PhoneNumber;
-use RomanStruk\SmsNotify\Response\Response;
-use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
+use RomanStruk\SmsNotify\Response;
 use RomanStruk\SmsNotify\SmsNotifyFacade;
 
 class ViberTest extends TestCase
 {
-    public function test_viber_client_is_send_message()
+    public function test_client_can_send_message()
     {
-        $res = new Response(new SuccessDeliveryReport('0661234567', 99, 'OK', 200));
+        $res = new Response(
+            $this->getResponseJson('viber_ua_send_success'),
+            ResponseMessage::class);
 
         $viberClient = Mockery::mock(Viber::class, function (MockInterface $mock) use ($res) {
             $mock
@@ -26,9 +28,9 @@ class ViberTest extends TestCase
         })->makePartial();
 
 
-        $response = $viberClient->to(new PhoneNumber('0661234567'))->send(new SmsMessage('test message'));
+        $response = $viberClient->to(new PhoneNumber('0661234567', 'UA'))->send(new SmsMessage('test message'));
 
-        $this->assertEquals(99, $response->getMessageId());
+        $this->assertEquals('f83f8868-5e46-c6cf-e4fb-615e5a293754', $response->current()->getId());
     }
 
     public function test_viber_request_client_return_valid_response()
@@ -37,23 +39,27 @@ class ViberTest extends TestCase
             $mock->shouldAllowMockingProtectedMethods()
                 ->shouldReceive('request')
                 ->andReturn(
-                    new \GuzzleHttp\Psr7\Response(200, [], json_encode(['status' => 'success', 'id' => 99], JSON_THROW_ON_ERROR))
+                    new \GuzzleHttp\Psr7\Response(200, [], $this->getResponseJson('viber_ua_send_success'))
                 );
         })->makePartial();
 
         $response = $viberClientMock->viberRequest('0666000000', 'Some message');
 
-        $this->assertEquals(99, $response->getMessageId('0666000000'));
-
+        $this->assertEquals('f83f8868-5e46-c6cf-e4fb-615e5a293754', $response->current()->getId());
     }
 
-    public function test_viber_auth_fail_response()
+    public function test_viber_client_can_parse_failed_response()
     {
-        $smsNotify = SmsNotifyFacade::client('viber', ['token' => 'fake token', 'sender_vb' => 'fake', 'sender_sms' => 'fake', 'default_channel' => 'viber']);
-        $response = $smsNotify
-            ->to(new PhoneNumber('0666000000'))
-            ->send(new SmsMessage('Some text'));
+        $viberClientMock = Mockery::mock(ViberClient::class , function (MockInterface $mock){
+            $mock->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('request')
+                ->andReturn(
+                    new \GuzzleHttp\Psr7\Response(200, [], $this->getResponseJson('viber_ua_send_failed'))
+                );
+        })->makePartial();
 
-        $this->assertEquals('Unauthenticated', $response->getStatus('0666000000'));
+        $response = $viberClientMock->viberRequest('0666000000', 'Some message');
+
+        $this->assertEquals('Something wrong', $response->current()->getErrorMessage());
     }
 }

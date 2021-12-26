@@ -3,18 +3,17 @@
 namespace RomanStruk\SmsNotify\Clients\TurboSms;
 
 use GuzzleHttp\Client as GuzzleHttpClient;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use JsonException;
 use Psr\Http\Message\ResponseInterface as GuzzleResponseInterface;
-use RomanStruk\SmsNotify\Response\FailDeliveryReport;
-use RomanStruk\SmsNotify\Response\Response;
-use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
+use RomanStruk\SmsNotify\Response;
 
 class TurboSmsClient
 {
     protected $urlMessageSend = 'https://api.turbosms.ua/message/send.json';
     protected $urlMessageSendPing = 'https://api.turbosms.ua/message/ping.json';
     protected $urlUserBalance = 'https://api.turbosms.ua/user/balance.json';
+
     /**
      * @var string[]
      */
@@ -42,74 +41,46 @@ class TurboSmsClient
     }
 
     /**
-     * @param string $sender
      * @param array $recipients
      * @param string $text
      * @return array
      */
-    private function prepareSmsJson(string $sender, array $recipients, string $text): array
+    protected function prepareSmsJson(array $recipients, string $text): array
     {
         return [
             'recipients' => $recipients,
             'sms' => [
-                'sender' => $sender,
+                'sender' => $this->sender,
                 'text' => $text
             ]
         ];
     }
 
-    /**
-     * @throws JsonException
-     */
-    private function decodeContent(string $content): array
-    {
-        return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-    }
-
     public function sendSms(array $recipients, string $text): Response
     {
-        $response = new Response();
         try {
-            $guzzleResponse = $this->request($this->urlMessageSend, $this->headers, $this->prepareSmsJson($this->sender, $recipients, $text));
-            $content = $this->decodeContent($guzzleResponse->getBody()->getContents());
-
-
-            $code = $content['response_code'] ?? null;
-
-            if ($code === 0 || $code === 800 || $code === 801 || $code === 802 || $code === 803) {
-                foreach ($content['response_result'] as $responseResult) {
-                    $response->setDeliveryReport(
-                        $responseResult['response_code'] === 0 ?
-                            new SuccessDeliveryReport($responseResult['phone'], $responseResult['message_id'], $responseResult['response_code'], $responseResult['response_status']) :
-                            new FailDeliveryReport($responseResult['phone'], $responseResult['response_code'], $responseResult['response_status'])
-                    );
-                }
-            }
-            if ($code === 301) {
-                $response->setDeliveryReport(FailDeliveryReport::unauthenticated($recipients));
-            }
-            $response->setDebugInformation('guzzleResponse', $content);
-        } catch (\Exception $exception) {
-            $response->setDeliveryReport(new FailDeliveryReport(implode(',', $recipients), $exception->getMessage(), $exception->getCode()));
+            $guzzleResponse = $this->request($this->urlMessageSend, $this->headers, $this->prepareSmsJson($recipients, $text));
+            $json = $guzzleResponse->getBody()->getContents();
+        } catch (ClientException $exception) {
+            $json = $exception->getResponse()->getBody()->getContents();
         }
-        return $response;
+        return new Response($json, ResponseMessage::class, 'response_result');
     }
 
     /**
      * @throws GuzzleException
-     * @throws JsonException
      */
     public function sendSmsPing(array $recipients, string $text): Response
     {
-        $guzzleResponse = $this->request($this->urlMessageSendPing, $this->headers, $this->prepareSmsJson($this->sender, $recipients, $text));
-        $content = $this->decodeContent($guzzleResponse->getBody()->getContents());
+        $json = $this->request(
+            $this->urlMessageSendPing,
+            $this->headers,
+            $this->prepareSmsJson($recipients, $text)
+        )
+            ->getBody()
+            ->getContents();
 
-        if ($content['response_code'] === 301) {
-            $report = FailDeliveryReport::unauthenticated($recipients);
-        }else{
-            $report = new SuccessDeliveryReport(implode(',', $recipients), '', $content['response_status'], $content['response_code']);
-        }
-        return new Response($report);
+        return new Response($json, ResponseMessage::class, 'response_result');
     }
 
     /**

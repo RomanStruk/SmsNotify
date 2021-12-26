@@ -1,14 +1,14 @@
 <?php
 
-namespace RomanStruk\SmsNotify\Clients;
+namespace RomanStruk\SmsNotify\Clients\Log;
 
 use Illuminate\Support\Facades\Log as LaravelLog;
+use Illuminate\Support\Str;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
 use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
-use RomanStruk\SmsNotify\Response\Response;
-use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
+use RomanStruk\SmsNotify\Response;
 
 class Log implements ClientInterface
 {
@@ -34,12 +34,17 @@ class Log implements ClientInterface
 
         LaravelLog::channel('syslog')->info('SmsNotify', [$this->formatMessage()]);
 
-        $response = new Response(new SuccessDeliveryReport($this->phoneNumber->first(), '', $this->formatMessage(), 200));
-        $response->setSenderClient($this);
-        $response->setDebugInformation('numbers', $this->phoneNumber->toArray());
-        $response->setDebugInformation('message', $message->getMessage());
-        $response->setDebugInformation('client', self::class);
-        return $response;
+        $json = json_encode([
+            'messages' => [
+                [
+                    'status' => 'OK',
+                    'message_id' => Str::random(),
+                    'message_text' => $message->getMessage(),
+                    'numbers' => $this->phoneNumber->toArray()
+                ]
+            ]
+        ], JSON_THROW_ON_ERROR);
+        return new Response($json, ResponseMessage::class, 'messages');
     }
 
     protected function formatMessage(): string

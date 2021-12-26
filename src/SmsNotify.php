@@ -8,6 +8,7 @@ use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
 use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
+use RomanStruk\SmsNotify\Exceptions\InvalidConfigurationException;
 
 class SmsNotify implements SmsNotifyInterface
 {
@@ -26,13 +27,16 @@ class SmsNotify implements SmsNotifyInterface
      */
     private $client;
 
+    /**
+     * @var string|array[]
+     */
     private $config;
 
     /**
-     * @param $config
-     * @throws \Exception
+     * @param string|array[] $config
+     * @throws InvalidConfigurationException
      */
-    public function __construct($config)
+    public function __construct(array $config)
     {
         $this->config = $config;
         $this->client($config['default']);
@@ -42,12 +46,12 @@ class SmsNotify implements SmsNotifyInterface
      * @param string $alias
      * @param array $configuration
      * @return SmsNotifyInterface
-     * @throws \Exception
+     * @throws InvalidConfigurationException
      */
     public function client(string $alias, array $configuration = []): SmsNotifyInterface
     {
         if (! array_key_exists($alias, $this->config['drivers']) || !$client = $this->config['drivers'][$alias]['client']){
-            throw new \Exception('Invalid client driver');
+            throw new InvalidConfigurationException('Invalid client driver');
         }
 
         $this->client = new $client(!empty($configuration) ? $configuration: $this->config['drivers'][$alias]);
@@ -55,12 +59,20 @@ class SmsNotify implements SmsNotifyInterface
         return $this;
     }
 
+    /**
+     * @param PhoneNumberInterface $phoneNumber
+     * @return SmsNotifyInterface
+     */
     public function to(PhoneNumberInterface $phoneNumber): SmsNotifyInterface
     {
         $this->phoneNumber = $phoneNumber;
         return $this;
     }
 
+    /**
+     * @param MessageInterface $message
+     * @return ResponseInterface
+     */
     public function send(MessageInterface $message): ResponseInterface
     {
         $this->message = $message;
@@ -70,33 +82,16 @@ class SmsNotify implements SmsNotifyInterface
             ->send($this->message);
     }
 
-    public function debug(bool $mode = false): SmsNotifyInterface
-    {
-        $this->config['debug'] = $mode;
-        $this->client->debug($mode);
-
-        return $this;
-    }
-
     /**
      * @param Closure $closure
      * @return SmsNotify
-     * @throws \Exception
+     * @throws InvalidConfigurationException
      */
     public function clientMap(Closure $closure): SmsNotifyInterface
     {
         $key = $closure($this);
 
         $this->client($this->config['map'][$key]);
-        return $this;
-    }
-
-    /**
-     * @return SmsNotifyInterface
-     */
-    public function enableDebug(): SmsNotifyInterface
-    {
-        $this->debug(true);
         return $this;
     }
 }

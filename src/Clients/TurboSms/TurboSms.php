@@ -2,11 +2,11 @@
 
 namespace RomanStruk\SmsNotify\Clients\TurboSms;
 
-use InvalidArgumentException;
 use RomanStruk\SmsNotify\Contracts\ClientInterface;
 use RomanStruk\SmsNotify\Contracts\MessageInterface;
 use RomanStruk\SmsNotify\Contracts\PhoneNumberInterface;
 use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
+use RomanStruk\SmsNotify\Exceptions\InvalidClientConfigurationException;
 
 class TurboSms implements ClientInterface
 {
@@ -19,22 +19,17 @@ class TurboSms implements ClientInterface
      * @var PhoneNumberInterface
      */
     private $phoneNumber;
-    /**
-     * @var MessageInterface
-     */
-    private $message;
-    /**
-     * @var bool
-     */
-    private $debug;
 
+    /**
+     * @throws InvalidClientConfigurationException
+     */
     public function __construct($config)
     {
         if (!$config['token']) {
-            throw new InvalidArgumentException('Need token');
+            throw new InvalidClientConfigurationException('Need token');
         }
         if (!$config['sender'] || !$config['sender_sms']) {
-            throw new InvalidArgumentException('Need alfa name for viber or sms');
+            throw new InvalidClientConfigurationException('Need alfa name for viber or sms');
         }
 
         $this->client = new TurboSmsClient($config['token'], $config['sender_sms']);
@@ -48,16 +43,11 @@ class TurboSms implements ClientInterface
 
     public function send(MessageInterface $message): ResponseInterface
     {
-        $this->message = $message;
-        $response = $this->client->sendSms($this->phoneNumber->toArray(), $message->getMessage());
-
-        $response->setSenderClient($this);
-        return $response;
+        return $this->request($this->phoneNumber->toArray(), $message->getMessage());
     }
 
-    public function debug(bool $mode): ClientInterface
+    protected function request($numbers, $message): ResponseInterface
     {
-        $this->debug = $mode;
-        return $this;
+        return $this->client->sendSms($numbers, $message);
     }
 }

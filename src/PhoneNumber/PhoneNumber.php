@@ -28,7 +28,7 @@ class PhoneNumber implements PhoneNumberInterface
 
         $this->phoneUtil = PhoneNumberUtil::getInstance();
 
-        if (!is_array($numbers)){
+        if (!is_array($numbers)) {
             $numbers = [$numbers];
         }
         foreach ($numbers as $number) {
@@ -43,7 +43,7 @@ class PhoneNumber implements PhoneNumberInterface
     public function isValidNumbers(): bool
     {
         foreach ($this->numbers as $number) {
-            if(! $this->phoneUtil->isValidNumber($number)){
+            if (!$this->phoneUtil->isValidNumber($number)) {
                 return false;
             }
         }

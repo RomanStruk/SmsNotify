@@ -1,7 +1,6 @@
 <?php
 namespace RomanStruk\SmsNotify\Tests;
 
-use RomanStruk\SmsNotify\Clients\Log;
 use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
 use RomanStruk\SmsNotify\Contracts\SmsNotifyInterface;
 use RomanStruk\SmsNotify\Message\SmsMessage;
@@ -25,7 +24,6 @@ class ServiceProviderTest extends TestCase
             ->to(new PhoneNumber('0666000000', 'UA'))
             ->send(new SmsMessage('Some text'));
 
-        $this->assertInstanceOf(Log::class, $response->getSenderClient());
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 
@@ -36,10 +34,9 @@ class ServiceProviderTest extends TestCase
         $response = $smsNotify
             ->to(new PhoneNumber('0666000000', 'UA'))
             ->send(new SmsMessage('Some text'));
-        $debug = $response->getDebugInformation();
+        $debug = $response->current()->toArray();
 
         $this->assertEquals(['+380666000000'], $debug['numbers']);
-        $this->assertEquals('Some text', $debug['message']);
-        $this->assertEquals(Log::class, $debug['client']);
+        $this->assertEquals('Some text', $debug['message_text']);
     }
 }

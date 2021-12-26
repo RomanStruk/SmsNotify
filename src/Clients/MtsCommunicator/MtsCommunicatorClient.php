@@ -3,9 +3,9 @@
 namespace RomanStruk\SmsNotify\Clients\MtsCommunicator;
 
 use GuzzleHttp\Client as GuzzleHttpClient;
-use RomanStruk\SmsNotify\Response\FailDeliveryReport;
-use RomanStruk\SmsNotify\Response\Response;
-use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
+use GuzzleHttp\Exception\ClientException;
+use RomanStruk\SmsNotify\Exceptions\UnauthorizedException;
+use RomanStruk\SmsNotify\Response;
 
 class MtsCommunicatorClient
 {
@@ -53,40 +53,49 @@ class MtsCommunicatorClient
      * @param string $message
      * @param string $channel
      * @return Response
+     * @throws UnauthorizedException
+     */
+    public function singleMessages(string $phone, string $message, string $channel): Response
+    {
+        $json = [
+            'phone_number' => $phone,   // Phone number of User. â–ª It is given in the international format without the Â«+Â» sign
+            'channels' => [$channel],
+            'channel_options' => [  // Have to be specified for each communication channel
+                'sms' => [
+                    'text' => $message,
+                    'alpha_name' => $this->alfa_name,
+                    'ttl' => 300     // Message lifetime in seconds
+                ]
+            ],
+        ];
+        try {
+            $json = $this->request($json)->getBody()->getContents();
+        }catch (ClientException $e){
+            if ($e->getResponse()->getStatusCode() === 401){
+                throw new UnauthorizedException('Unauthorized');
+            }
+            $json = $e->getResponse()->getBody()->getContents();
+        }
+
+        return new Response($json, ResponseMessage::class, null);
+    }
+
+    /**
+     * @param $json
+     * @return \Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function request(string $phone, string $message, string $channel): Response
+    protected function request($json)
     {
         $guzzleClient = new GuzzleHttpClient([
             'auth' => [$this->login, $this->password],
         ]);
 
-        $response =  $guzzleClient->post($this->api_url, [
+        return $guzzleClient->post($this->api_url, [
             'headers' => [
                 'Accept' => 'application/json',
             ],
-            'json' => [
-                'phone_number' => $phone,   // Phone number of User. â–ª It is given in the international format without the Â«+Â» sign
-                'channels' => [$channel],
-                'channel_options' => [  // Have to be specified for each communication channel
-                    'sms' => [
-                        'text' => $message,
-                        'alpha_name' => $this->alfa_name,
-                        'ttl' => 300     // Message lifetime in seconds
-                    ]
-                ],
-            ]
+            'json' => $json
         ]);
-        if ($response->getStatusCode() === 200) {
-            $content = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
-
-            if (array_key_exists('message_id', $content)) {
-                $report = new SuccessDeliveryReport($phone, $content['message_id'], 'OK', 200);
-            }else{
-                $report = new FailDeliveryReport($phone, json_encode($content), 500);
-            }
-            return new Response($report);
-        }
-        return new Response(new FailDeliveryReport($phone, 'Something wrong', 500));
     }
 }

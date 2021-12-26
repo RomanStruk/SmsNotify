@@ -12,6 +12,9 @@ class ResponseMessage extends Message
 
     public function getErrorMessage(): string
     {
+        if (isset($this->data[$this->errorKey]) && $this->data[$this->errorKey] === 'Unauthenticated.') {
+            return 'Unauthenticated.';
+        }
         if (!isset($this->data[$this->statusKey]) || $this->data[$this->statusKey] !== 'error') {
             return '';
         }

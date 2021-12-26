@@ -5,12 +5,9 @@ namespace RomanStruk\SmsNotify\Clients\ViberUa;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use JsonException;
 use Psr\Http\Message\ResponseInterface as GuzzleResponseInterface;
 use RomanStruk\SmsNotify\Contracts\Response\ResponseInterface;
-use RomanStruk\SmsNotify\Response\FailDeliveryReport;
-use RomanStruk\SmsNotify\Response\Response;
-use RomanStruk\SmsNotify\Response\SuccessDeliveryReport;
+use RomanStruk\SmsNotify\Response;
 
 class ViberClient
 {
@@ -101,17 +98,11 @@ class ViberClient
     {
         try {
             $guzzleResponse = $this->request($this->api_urls['viber'], $this->headers, $this->prepareViberRequest($recipients, $message));
-            return $this->parseResponse($guzzleResponse, $recipients);
+            $json = $guzzleResponse->getBody()->getContents();
         } catch (ClientException $e) {
-            $guzzleResponse = $e->getResponse();
-            if ($guzzleResponse->getStatusCode() === 401) {
-                $fail = new FailDeliveryReport($recipients, 'Unauthenticated', 401);
-
-            } else {
-                $fail = new FailDeliveryReport($recipients, $e->getMessage(), $guzzleResponse->getStatusCode());
-            }
-            return new Response($fail);
+            $json = $e->getResponse()->getBody()->getContents();
         }
+        return new Response($json, ResponseMessage::class);
     }
 
     /**
@@ -131,36 +122,12 @@ class ViberClient
      * @param $id_message
      * @return ResponseInterface
      * @throws GuzzleException
-     * @throws JsonException
      */
     public function statusRequest($id_message): ResponseInterface
     {
         $guzzleResponse = $this->request($this->api_urls['status'], $this->headers, ['id' => $id_message]);
-        if ($guzzleResponse->getStatusCode() === 200) {
-            $content = json_decode($guzzleResponse->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
-            // відповідь для статусу повідомлення
-            if (array_key_exists('query_status', $content) && $content['query_status'] === 'success') {
-                $success = new SuccessDeliveryReport($content['id'], $content['id'], implode(', ', [$content['query_status'], $content['status_name']]), 200);
-                return new Response($success);
-            }
-        }
-        return new Response(new FailDeliveryReport($id_message, 'Something wrong', 500));
-    }
 
-    /**
-     * @throws JsonException
-     */
-    private function parseResponse(GuzzleResponseInterface $guzzleResponse, $recipients = null): ResponseInterface
-    {
-        if ($guzzleResponse->getStatusCode() === 200) {
-            $content = json_decode($guzzleResponse->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
-            //відповідь для відправки повідомлень
-            if (array_key_exists('status', $content) && $content['status'] === 'success') {
-                $success = new SuccessDeliveryReport($recipients, $content['id'], implode(', ', $content), 200);
-                return new Response($success);
-            }
-        }
-        return new Response(new FailDeliveryReport($recipients, 'Something wrong', 500));
+        return new Response($guzzleResponse->getBody()->getContents(), ResponseMessage::class);
     }
 
     /**

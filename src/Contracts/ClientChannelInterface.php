@@ -4,5 +4,5 @@ namespace RomanStruk\SmsNotify\Contracts;
 
 interface ClientChannelInterface
 {
-    public function setChannel(string $channel);
+    public function setChannel(string $channel): self;
 }

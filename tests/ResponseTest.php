@@ -5,7 +5,6 @@ namespace RomanStruk\SmsNotify\Tests;
 
 use RomanStruk\SmsNotify\Clients\TurboSms\ResponseMessage;
 use RomanStruk\SmsNotify\Response;
-use function Webmozart\Assert\Tests\StaticAnalysis\null;
 
 class ResponseTest extends TestCase
 {
@@ -51,6 +50,24 @@ class ResponseTest extends TestCase
 
         self::assertEquals('error', $response->current()->getStatus());
         self::assertEquals('Error message', $response->current()->getErrorMessage());
+    }
+
+    public function test_response_parse_json_for_mts_communicator_success()
+    {
+        $json = '{"message_id":"9f60ac8f-e721-5027-b838-e6fcb95fcd7a"}';
+        $response = new Response($json, \RomanStruk\SmsNotify\Clients\MtsCommunicator\ResponseMessage::class, null);
+
+        self::assertEquals('9f60ac8f-e721-5027-b838-e6fcb95fcd7a', $response->current()->getId());
+        self::assertEquals('', $response->current()->getErrorMessage());
+    }
+
+    public function test_response_parse_json_for_mts_communicator_failed()
+    {
+        $json = '{"error_code":36024,"error_text":"Phone number incorrect"}';
+        $response = new Response($json, \RomanStruk\SmsNotify\Clients\MtsCommunicator\ResponseMessage::class, null);
+
+        self::assertEquals('36024', $response->current()->getStatus());
+        self::assertEquals('Phone number incorrect', $response->current()->getErrorMessage());
 
     }
 }

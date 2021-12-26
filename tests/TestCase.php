@@ -20,4 +20,14 @@ abstract class TestCase extends BaseTestCase
             'SmsNotifyFacade' => SmsNotifyFacade::class
         ];
     }
+
+    protected function getSendSuccessJson($client)
+    {
+        return file_get_contents(__DIR__ . '/responses/'.$client.'_send_success.json');
+    }
+
+    protected function getResponseJson(string $file)
+    {
+        return file_get_contents(__DIR__ . '/responses/'.$file.'.json');
+    }
 }
