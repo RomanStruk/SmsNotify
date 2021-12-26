@@ -28,7 +28,7 @@ class TurboSms implements ClientInterface
         if (!$config['token']) {
             throw new InvalidClientConfigurationException('Need token');
         }
-        if (!$config['sender'] || !$config['sender_sms']) {
+        if (!$config['sender_viber'] || !$config['sender_sms']) {
             throw new InvalidClientConfigurationException('Need alfa name for viber or sms');
         }
 

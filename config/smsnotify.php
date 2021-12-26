@@ -5,11 +5,6 @@ return [
     */
     'default' => 'log',
 
-    /**
-     * Відладка
-    */
-    'debug' => false,
-
     'drivers' => [
         'log' => [
             'client' => \RomanStruk\SmsNotify\Clients\Log\Log::class
@@ -31,7 +26,8 @@ return [
         'turbosms' => [
             'client' => \RomanStruk\SmsNotify\Clients\TurboSms\TurboSms::class,
             'token' => '',
-            'sender_sms' => 'TurboSMS'
+            'sender_sms' => 'TurboSMS',
+            'sender_viber' => 'TurboSMS'
         ]
     ],
     'map' => [
