@@ -1,19 +1,19 @@
 {
     "name": "romanstruk/smsnotify",
-    "description": "Відправка смс",
+    "description": "Бібліотека для Laravel який реалізує відправку смс повідомлень різними клієнтами по одному API",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Roman",
+            "name": "Roman Struk",
             "email": "romanuch4@gmail.com"
         }
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "guzzlehttp/guzzle": "^7.0.1",
+        "guzzlehttp/guzzle": "^6.5.5|^7.0.1",
         "ext-json": "*",
-        "giggsey/libphonenumber-for-php": "^8.12"
+        "giggsey/libphonenumber-for-php": "^7.0|^8.0"
     },
     "require-dev": {
         "orchestra/testbench": "6.x",

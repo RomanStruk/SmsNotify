@@ -1,5 +1,17 @@
 # Change Log
 
+## v0.1.0-beta - 2021-12-27
+
+### Added
+
+* Перехід на бета версію
+
+### Fixed
+
+* Правки в підтримуваних версіях `guzzlehttp/guzzle`
+* Правки в підтримуваних версіях `giggsey/libphonenumber-for-php`
+
+
 ## v0.0.3-alpha - 2021-12-26
 
 ### Fixed

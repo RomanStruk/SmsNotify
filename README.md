@@ -1,5 +1,5 @@
 # SmsNotify
-[![Release](https://img.shields.io/badge/Release-v0.0.3--alpha-yellow?style=flat-square)](https://github.com/RomanStruk/SmsNotify/releases)
+[![Release](https://img.shields.io/badge/Release-v0.1.0--beta-yellow?style=flat-square)](https://github.com/RomanStruk/SmsNotify/releases)
 
 Бібліотека для Laravel який реалізує відправку смс повідомлень різними клієнтами по одному API
 Підтримуються сторонні сервіси такі як :
