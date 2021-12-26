@@ -11,9 +11,9 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "guzzlehttp/guzzle": "7.4.x",
+        "guzzlehttp/guzzle": "^7.0.1",
         "ext-json": "*",
-        "giggsey/libphonenumber-for-php": "8.x-dev"
+        "giggsey/libphonenumber-for-php": "^8.12"
     },
     "require-dev": {
         "orchestra/testbench": "6.x",
