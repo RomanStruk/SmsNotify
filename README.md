@@ -1,5 +1,5 @@
 # SmsNotify
-[![Release](https://img.shields.io/badge/Release-v0.0.2--alpha-yellow?style=flat-square)](https://github.com/RomanStruk/SmsNotify/releases)
+[![Release](https://img.shields.io/badge/Release-v0.0.3--alpha-yellow?style=flat-square)](https://github.com/RomanStruk/SmsNotify/releases)
 
 Бібліотека для Laravel який реалізує відправку смс повідомлень різними клієнтами по одному API
 Підтримуються сторонні сервіси такі як :
@@ -15,10 +15,12 @@
 ```bash
 composer require romanstruk/smsnotify
 ```
+## Сумістність
+На даний момент перевірено тільки на Laravel 8.x
 
 ## Налаштування
 ```bash
-php artisan vendor:publish SmsNotifyServiceProvider
+php artisan vendor:publish RomanStruk\SmsNotify\SmsNotifyServiceProvider
 ```
 Після цього оновіть ```config/smsnotify.php``` вашими налаштуваннями.
 
