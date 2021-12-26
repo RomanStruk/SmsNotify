@@ -16,7 +16,7 @@
 composer require romanstruk/smsnotify
 ```
 
-##Налаштування
+## Налаштування
 ```bash
 php artisan vendor:publish SmsNotifyServiceProvider
 ```
